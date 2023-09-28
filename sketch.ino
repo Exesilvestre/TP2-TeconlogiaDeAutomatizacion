@@ -6,6 +6,7 @@
 #include "ledController.h"
 #include "display.h"
 #include "poteController.h"
+#include "thinkspeakclient.h"
 
 void mensajesNuevos(int numerosMensajes);
 String reemplazarGuiones(String txt);
@@ -17,7 +18,7 @@ String reemplazarGuiones(String txt);
 
 // Para el punto opcional
 const long CHANNEL = 2285543;
-const char* API_KEY ="I05Z3U0RL0AGK1SJ";
+char* API_KEY ="I05Z3U0RL0AGK1SJ";
 
 //URL base: 
 const String BASEURL = "https://api.thingspeak.com/update?api_key="; 
@@ -29,6 +30,7 @@ LedController ledController(LED1);
 Display myDisplay(128, 64, -1);
 DHT sensor(PIN_SENSOR, DHT22);
 PoteController pote(POTE);
+ThinkSpeakClient tsclient(CHANNEL, API_KEY);
 
 //Necesitamos ssid pass token de nuestro bot
 
@@ -85,30 +87,7 @@ void loop() {
     }
 
     tiempoAnterior = millis();
-  }
-  
-  /*
-    PARA PUNTO OPCIONAL
-    if(wifi.status() != WL_CONNECTED){
-      delay(1000);
-
-      int rand = random(1,100);
-      String end_point = URL + "&field1="
-      HTTPClient client;
-
-      client.begin(end_point.c_str());
-      int codigo_estado = client.GET();
-
-      if(codigo_estado == 200){
-        Serial.println("HTTP Status code: ");
-        Serial.print(codigo_estado);
-        Serial.println(client.getString());
-      }else{
-        Serial.println("HTTP Error Status code: ");
-      }
-      client.end();
-    }
-  */             
+  }          
 
   delay(1000); // this speeds up the simulation
 }
@@ -165,6 +144,17 @@ void mensajesNuevos(int numerosMensajes){
       bot.sendMessage(chat_id, "Valor de voltaje de potenciometro: " + String(voltaje) + "v");
     }
 
+    if(text == "/start"){
+      bot.sendMessage(chat_id, "Bienvenido al Trabajo Practico N2 \n\n"
+                               "/led<led><on/off> - permite encender o apagar un led de la placa. "
+                               "Indique en led el GPIO correspondiente al led verde (23) o al azul (2) y la acción on/off.\n\n"
+                               "/dht22 - permite informar los valores de humedad y temperatura del sensor \n\n"
+                               "/pote - permite informar el valor de voltaje (0-3.3v) segun la lectura del potenciometro \n\n"
+                               "/display<mensaje> - permite mostrar el contenido de un mensaje originado desde el bot"
+                               " en el display de la placa de desarrollo.\n\n"
+                               "/platiot - envia un valor aleatorio entre 1 y 100", "");
+    }
+
     if(text.length() >= 8){
       if(text.substring(0, 8) == "/display"){
         String msj = text.substring(8, text.length());
@@ -174,25 +164,9 @@ void mensajesNuevos(int numerosMensajes){
     }
 
     if(text == "/platiot"){
-      if(WiFi.status() == WL_CONNECTED){
-      delay(1000);
-
-      int rand = random(1,100);
-      String end_point = url + "&field1=" +  String(rand);
-      HTTPClient client;
-
-      client.begin(end_point.c_str());
-      int codigo_estado = client.GET();
-
-      if(codigo_estado == 200){
-        Serial.println("HTTP Status code: ");
-        Serial.print(codigo_estado);
-        Serial.println(client.getString());
-      }else{
-        Serial.println("HTTP Error Status code: ");
-      }
-      client.end();
-    }
+      String msj = tsclient.sendToDashboard();
+      Serial.println(msj);
+      bot.sendMessage(chat_id, msj, "");
     }
 
 
