@@ -36,7 +36,7 @@ ThinkSpeakClient tsclient(CHANNEL, API_KEY);
 
 const char* SSID = "Wokwi-GUEST";
 const char* PASS = "";
-const char* BOT_TOKEN  = "6394488729:AAF88olXJ9pCO5os9MBKdRSZl59YisIVn7s";
+const char* BOT_TOKEN  = "6368598380:AAE2Av-hRD-5m8jlj3GLtIa7nXfK3r36quQ";
 const unsigned long tiempo = 500; //tiempo medio entre mensajes de escaneo
 
 //Token de Telegram BOT se obtenienen desde Botfather en telegram
@@ -103,6 +103,15 @@ void mensajesNuevos(int numerosMensajes){
   //Por cada mensaje pido el id de la comunicación, el texto y ver que me mandó
   for(int i = 0; i< numerosMensajes; i++)
   {
+    String menu_start = "Bienvenido al Trabajo Practico N2 \n\n"
+                               "/led<led><on/off> - permite encender o apagar un led de la placa. "
+                               "Indique en led el GPIO correspondiente al led verde (23) o al azul (2) y la acción on/off.\n\n"
+                               "/dht22 - permite informar los valores de humedad y temperatura del sensor \n\n"
+                               "/pote - permite informar el valor de voltaje (0-3.3v) segun la lectura del potenciometro \n\n"
+                               "/display<mensaje> - permite mostrar el contenido de un mensaje originado desde el bot"
+                               " en el display de la placa de desarrollo.\n\n"
+                               "/platiot - envia un valor aleatorio a la API entre 1 y 100";
+
     String chat_id = bot.messages[i].chat_id;
     String text = bot.messages[i].text;
     Serial.println(text);
@@ -114,59 +123,56 @@ void mensajesNuevos(int numerosMensajes){
       bot.sendMessage(chat_id, "LED verde encendido!", "");
     }
     
-    if(text == "/led23off")
+    else if(text == "/led23off")
     {
       digitalWrite(LED1, LOW);
       bot.sendMessage(chat_id, "LED verde apagado!", "");
     }
 
-    if(text == "/led2on")
+    else if(text == "/led2on")
     {
       digitalWrite(LED2, HIGH);
       bot.sendMessage(chat_id, "LED azul encendido!", "");
     }
     
-    if(text == "/led2off")
+    else if(text == "/led2off")
     {
       digitalWrite(LED2, LOW);
       bot.sendMessage(chat_id, "LED azul apagado!", "");
     }
 
-    if(text == "/dht22"){
+    else if(text == "/dht22"){
       float temp = sensor.readTemperature();
       float hum = sensor.readHumidity();
 
       bot.sendMessage(chat_id, "Temp: " + String(temp) + "ºc - " + "Hum: " + String(hum) + "%", "");
     }
 
-    if(text == "/pote"){
+    else if(text == "/pote"){
       float voltaje = pote.obtenerVoltaje();
       bot.sendMessage(chat_id, "Valor de voltaje de potenciometro: " + String(voltaje) + "v");
     }
 
-    if(text == "/start"){
-      bot.sendMessage(chat_id, "Bienvenido al Trabajo Practico N2 \n\n"
-                               "/led<led><on/off> - permite encender o apagar un led de la placa. "
-                               "Indique en led el GPIO correspondiente al led verde (23) o al azul (2) y la acción on/off.\n\n"
-                               "/dht22 - permite informar los valores de humedad y temperatura del sensor \n\n"
-                               "/pote - permite informar el valor de voltaje (0-3.3v) segun la lectura del potenciometro \n\n"
-                               "/display<mensaje> - permite mostrar el contenido de un mensaje originado desde el bot"
-                               " en el display de la placa de desarrollo.\n\n"
-                               "/platiot - envia un valor aleatorio entre 1 y 100", "");
+    else if(text == "/start"){
+      bot.sendMessage(chat_id, menu_start, "");
     }
 
-    if(text.length() >= 8){
+    else if(text.length() >= 8){
       if(text.substring(0, 8) == "/display"){
         String msj = text.substring(8, text.length());
         String msj_formateado = reemplazarGuiones(msj);
         myDisplay.showOutput(msj_formateado);
+        bot.sendMessage(chat_id, "Ver mensaje en el display.");
       }
     }
 
-    if(text == "/platiot"){
+    else if(text == "/platiot"){
       String msj = tsclient.sendToDashboard();
       Serial.println(msj);
-      bot.sendMessage(chat_id, msj, "");
+    }
+    
+    else{
+      bot.sendMessage(chat_id, "El comando no es valido.");
     }
 
 
@@ -182,3 +188,4 @@ String reemplazarGuiones(String txt){
   }
   return txt;
 }
+

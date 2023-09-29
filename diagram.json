@@ -26,7 +26,7 @@
       "attrs": { "i2cAddress": "0x3c" }
     },
     { "type": "wokwi-dht22", "id": "dht1", "top": -140.8, "left": -176.29, "attrs": {} },
-    { "type": "wokwi-potentiometer", "id": "pot1", "top": 172.08, "left": -264.7, "attrs": {} }
+    { "type": "wokwi-potentiometer", "id": "pot1", "top": 171.5, "left": -259.4, "attrs": {} }
   ],
   "connections": [
     [ "esp:TX0", "$serialMonitor:RX", "", [] ],
